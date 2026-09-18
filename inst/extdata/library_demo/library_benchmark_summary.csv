@@ -1,0 +1,4 @@
+method,n_queries,map,mrr,p_at_1,p_at_5,p_at_10,p_at_20
+cosine,3,1,1,1,0.25,0.25,0.25
+weighted_cosine,3,1,1,1,0.25,0.25,0.25
+composite,3,1,1,1,0.25,0.25,0.25

@@ -1,0 +1,13 @@
+^\.github$
+^\.git$
+^\.claude$
+^data-raw$
+^docs$
+^tools$
+(^|/)\.DS_Store$
+^Rplots[.]pdf$
+^benchmark_output_main_tol15$
+^AGENTS[.]md$
+^LC_EXTENSION_HANDOFF_JA[.]md$
+^.*[.]Rcheck$
+(^|/)[.]Rhistory$

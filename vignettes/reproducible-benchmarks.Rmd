@@ -1,0 +1,163 @@
+---
+title: "Reproducible Benchmarks and Packaged Example Outputs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Reproducible Benchmarks and Packaged Example Outputs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(ppmWass)
+library(readr)
+
+example_dir <- function(...) {
+  inst_path <- system.file(..., package = "ppmWass")
+  if (nzchar(inst_path)) {
+    return(inst_path)
+  }
+  candidates <- c(
+    file.path("..", "inst", ...),
+    file.path("inst", ...)
+  )
+  hit <- candidates[file.exists(candidates)][1]
+  if (!is.na(hit) && nzchar(hit)) {
+    return(hit)
+  }
+  candidates[1]
+}
+```
+
+This vignette shows how to inspect the representative benchmark outputs bundled
+with the package and how to regenerate them for your own data.
+
+The packaged artifacts are synthetic. They are intended as lightweight
+templates for manuscript tables and supplementary files, not as scientific
+evidence for method performance on external datasets.
+
+The bundled examples are intentionally small. They are useful for checking file
+formats, column names, and figure/table wiring, but manuscript claims should be
+supported by larger real datasets run through the same scripts.
+
+## Metric Cheat Sheet
+
+- `replicate_top1`: fraction of replicate queries whose nearest neighbor shares the same InChIKey group.
+- `replicate_mrr`: mean reciprocal rank of the first matching replicate across all replicate queries.
+- `map`: mean average precision across ranked retrieval results.
+- `auc_roc`: area under the ROC curve when InChIKey connectivity matches are treated as positives.
+- `silhouette`: average silhouette width for cluster separation under the available labels.
+- `fdr_at_07`: estimated false discovery rate among matches whose similarity exceeds `0.7`.
+- `homolog_score`: internal consistency score for high-similarity, RI-separated pairs, not a curated homolog benchmark unless external labels are supplied.
+
+## Bundled Benchmark Artifacts
+
+```{r}
+benchmark_dir <- example_dir("extdata", "benchmark_demo")
+benchmark_summary <- read_csv(file.path(benchmark_dir, "benchmark_summary.csv"), show_col_types = FALSE)
+benchmark_summary
+```
+
+The parameter-sweep example includes repeated subsampling (`n_replicates = 3`,
+`sample_frac = 0.8`) so the output can be summarized into stability ranges
+rather than treated as a single point estimate.
+
+```{r}
+sweep_summary <- read_csv(file.path(benchmark_dir, "distance_param_sweep.csv"), show_col_types = FALSE)
+head(sweep_summary)
+```
+
+The bundled sweep was generated from a small grid like this:
+
+```{r}
+data.frame(
+  tol_ppm = c(10, 10, 20, 20),
+  w_frag = c(0.7, 0.5, 0.9, 0.6),
+  w_loss = c(0.3, 0.5, 0.1, 0.4)
+)
+```
+
+For manuscript work, expand this grid to cover the parameters that matter for
+your data, then summarize the repeated runs by mean, SD, or quantiles.
+
+Runtime summaries are also bundled so that the expected table structure is
+available without rerunning the full benchmark workflow.
+
+```{r}
+runtime_summary <- read_csv(file.path(benchmark_dir, "distance_runtime_summary.csv"), show_col_types = FALSE)
+runtime_summary
+```
+
+## Bundled Library Search Example
+
+The package also ships a tiny MSP-based query/library example under
+`inst/extdata/library_demo`.
+
+```{r}
+library_dir <- example_dir("extdata", "library_demo")
+library_summary <- read_csv(file.path(library_dir, "library_benchmark_summary.csv"), show_col_types = FALSE)
+library_summary
+```
+
+These files were generated from:
+
+- `query_demo.msp`
+- `library_demo.msp`
+- `library_hits_cosine.csv`
+- `library_hits_weighted_cosine.csv`
+- `library_hits_composite.csv`
+
+You can use them as templates for local NIST/MoNA-style MSP exports.
+
+## Optional Distance Backends
+
+The packaged example outputs focus on methods that do not require optional
+dependencies beyond the core workflow. `entropy` requires the `msentropy`
+package, and `wasserstein` / `ppm_wasserstein` require the `transport`
+package, so those methods are not embedded in the small bundled CSV examples.
+
+For paper figures or supplement tables, they should still be evaluated when the
+optional dependencies are available:
+
+```r
+params <- eihrms_default_params()
+
+run_benchmark(
+  spectra_result = spectra,
+  methods = c(
+    "cosine", "weighted_cosine", "composite",
+    "entropy", "wasserstein", "ppm_wasserstein"
+  ),
+  params = params
+)
+```
+
+## Regenerating the Outputs
+
+The repository includes two runnable scripts:
+
+```r
+# Full benchmark workflow
+Rscript inst/scripts/run_benchmark_reproducible.R --output-dir=benchmark_output
+
+# Query-vs-library retrieval workflow
+Rscript inst/scripts/run_library_head_to_head.R \
+  --query=query.msp \
+  --library=library.msp \
+  --output-dir=library_benchmark_output
+```
+
+For repository maintenance, the bundled synthetic example files are refreshed by:
+
+```r
+Rscript data-raw/generate_example_artifacts.R
+```
+
+## Interpretation Notes
+
+- `evaluate_homolog_detection()` should be treated as an internal consistency metric when `compound_class` was inferred by the package itself.
+- `create_homolog_ground_truth()` uses the first 14 characters of InChIKey, which represent the connectivity layer, not curated homolog-series labels.
+- Full-dataset benchmark summaries are point estimates unless you also run repeated subsampling, bootstrap resampling, or another stability analysis.

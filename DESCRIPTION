@@ -1,0 +1,27 @@
+Package: ppmWass
+Type: Package
+Title: ppm-Aware Wasserstein Similarity for GC-HRMS Spectra
+Version: 0.0.3.9001
+Authors@R: c(
+    person(given = "Akifumi", family = "Eguchi", role = c("aut", "cre"), email = "siero5335@gmail.com")
+  )
+Author: Akifumi Eguchi [aut, cre]
+Maintainer: Akifumi Eguchi <siero5335@gmail.com>
+Description: Tools to compute ppm-aware Wasserstein and related similarity
+    measures among EI-HRMS (GC-HRMS) fragmentation spectra, including fragment-
+    and pooled derived mass-difference distances, optional typical-difference
+    projections, and cluster explanation reports. Legacy neutral-loss argument
+    names are retained for compatibility.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: dplyr, tibble, magrittr, stringr, readr, tidyr, Matrix, transport, Rcpp
+LinkingTo: Rcpp
+Suggests: dbscan, uwot, ggplot2, ComplexHeatmap, circlize, gridExtra,
+        approxOT, msentropy, cluster, scales, knitr, rmarkdown,
+        testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+NeedsCompilation: yes
+Packaged: 2026-04-09 10:51:32 UTC; a_eguchi
+Config/roxygen2/version: 8.0.0

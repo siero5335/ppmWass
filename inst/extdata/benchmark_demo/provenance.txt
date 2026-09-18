@@ -1,0 +1,4 @@
+Synthetic benchmark artifacts generated from data-raw/generate_example_artifacts.R
+Seed: 1
+Methods: cosine, hellinger, weighted_cosine, composite
+InChIKeys were assigned synthetically in replicate pairs for tabular examples.
